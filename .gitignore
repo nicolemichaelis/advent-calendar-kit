@@ -1,0 +1,6 @@
+node_modules
+.netlify
+.DS_Store
+tools/cards/build
+tools/cards/out
+tools/cards/frames*
