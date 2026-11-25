@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#eee5d8">
+<meta name="robots" content="noindex">
+<title>An advent calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="content.js"></script>
+<style>
+/* A small museum of us. Antique frames on a gallery wall; each day one arrives under a velvet drape
+   that the recipient lifts from the Telegram message. Brass plaques, picture lights, and a character guarding the rope.
+   The wall colour comes from config.json (style.wall) and is applied by the script at the bottom of this file. */
+:root{--wall:#2c3a31;--wall-a:#33433a;--wall-b:#26332b;--wall-c:#222d26;--cream:#f4ecdc;--ink:#2d2a26;--brass:#c6a35a}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{background:var(--wall)}
+body{color:var(--cream);font-family:"Instrument Serif",Georgia,serif;min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(90% 40% at 50% 0%,rgba(255,226,170,.16),transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.5' numOctaves='4'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .14 0 0 0 0 .11 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--wall-a),var(--wall-b) 70%,var(--wall-c))}
+main{max-width:640px;margin:0 auto;padding:34px 18px 0}
+header{text-align:center;padding:0 4px 30px}
+header h1{text-wrap:balance;font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(48px,13vw,70px);line-height:.95;letter-spacing:-.01em;color:var(--cream);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+header p{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-weight:400;font-size:26px;color:#e8d7b4;margin-top:10px;display:inline-flex;align-items:center;gap:8px}
+header p svg{width:20px;height:18px}
+
+.wall{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:34px 14px;grid-auto-rows:calc((min(640px,100vw) - 36px - 70px) / 6)}
+.slot{position:relative}
+.frame{position:absolute;inset:0;cursor:pointer;border-style:solid;border-width:var(--bw,17px);border-image:var(--img) 76 round;
+  filter:drop-shadow(0 10px 12px rgba(0,0,0,.45)) drop-shadow(0 2px 2px rgba(0,0,0,.35));transform:rotate(var(--r,0deg));transition:transform .3s}
+.frame:active{transform:rotate(var(--r,0deg)) scale(.97)}
+.big .frame{--bw:27px}
+.pic{position:absolute;inset:0;overflow:hidden;background:#d8cdb8}
+.pic.matted{padding:9%;background:#efe7d6;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.pic img,.pic .ph{width:100%;height:100%;object-fit:cover;display:block}
+.pic.matted img{box-shadow:inset 0 0 6px rgba(0,0,0,.4);outline:1px solid rgba(0,0,0,.12)}
+.pic::after{content:"";position:absolute;inset:0;box-shadow:inset 0 3px 8px rgba(0,0,0,.45);pointer-events:none}
+.ph{display:flex;align-items:center;justify-content:center;font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:18px;color:#7a6f60;text-align:center}
+.plaque{position:absolute;left:50%;bottom:-27px;transform:translateX(-50%);min-width:34px;padding:1px 9px;border-radius:2px;text-align:center;
+  background:linear-gradient(180deg,#e2c887,#b8924a 55%,#d8bb78);box-shadow:0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.4);
+  font-family:Inter,system-ui,sans-serif;font-weight:500;font-size:11px;letter-spacing:.02em;color:#3b2c12}
+.lamp{position:absolute;left:50%;top:-6px;width:40%;height:8px;transform:translateX(-50%);border-radius:5px;z-index:3;
+  background:linear-gradient(180deg,#e9d39a,#a9843c);box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.lamp::before{content:"";position:absolute;left:50%;top:-8px;width:3px;height:9px;margin-left:-1.5px;background:#a9843c}
+.lamp::after{content:"";position:absolute;left:-30%;right:-30%;top:6px;height:90px;background:radial-gradient(ellipse at 50% 0,rgba(255,226,160,.38),transparent 70%);pointer-events:none}
+
+/* the velvet drape over a new frame */
+.drape{position:absolute;inset:-6px -5px -8px;z-index:4;pointer-events:none;border-radius:3px 3px 6px 6px;transform-origin:50% 0;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),transparent 30%,rgba(0,0,0,.35)),
+    repeating-linear-gradient(90deg,#6e1620 0,#8d2330 9%,#5a111a 17%,#7b1c27 24%,#9a2b37 31%,#61131c 38%);
+  box-shadow:0 12px 18px rgba(0,0,0,.5);transition:transform 1.1s cubic-bezier(.6,0,.25,1),opacity 1.1s}
+.drape::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:7px;background:repeating-linear-gradient(90deg,#d9b866 0 3px,#a8843a 3px 6px);border-radius:0 0 4px 4px}
+.tassel{position:absolute;right:12%;bottom:-26px;width:10px;height:30px;z-index:5;transition:opacity .4s}
+.slot.fresh .drape{animation:breeze 4s ease-in-out infinite}
+@keyframes breeze{0%,80%,100%{transform:skewX(0)}86%{transform:skewX(-1.5deg)}92%{transform:skewX(1.2deg)}}
+.slot.open .drape{transform:translateY(-120%) scaleY(.4);opacity:0}
+.slot.open .tassel{opacity:0}
+.slot.shake .frame{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+
+/* places still waiting for a frame: a hook and a patch of unfaded paint */
+.wait{position:absolute;inset:4px;border-radius:2px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+.wait::before{content:"";position:absolute;left:50%;top:-9px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e2c887,#7d6230);box-shadow:0 1px 2px rgba(0,0,0,.6)}
+.wait span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:"Instrument Serif",Georgia,serif;font-size:22px;color:rgba(244,236,220,.16)}
+
+/* the gallery floor, the rope and our guard */
+.floor{position:relative;margin-top:60px;height:230px;overflow:hidden}
+.skirting{position:absolute;left:0;right:0;top:92px;height:14px;background:linear-gradient(#e9e0cf,#c9bea9);box-shadow:0 2px 4px rgba(0,0,0,.35)}
+.parquet{position:absolute;left:0;right:0;top:106px;bottom:0;background:
+  repeating-linear-gradient(45deg,rgba(0,0,0,.08) 0 2px,transparent 2px 38px),repeating-linear-gradient(-45deg,rgba(0,0,0,.08) 0 2px,transparent 2px 38px),
+  linear-gradient(180deg,#9a6b3e,#7b5230)}
+.floor svg.rope{position:absolute;left:0;right:0;top:22px;width:100%;height:150px}
+.guard{position:absolute;left:50%;top:6px;width:118px;transform:translateX(-50%);filter:drop-shadow(0 12px 8px rgba(0,0,0,.45))}
+footer{background:#7b5230;padding:4px 16px 80px;text-align:center;font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:24px;color:#f4ecdc}
+
+/* the character pops up to deliver */
+#deliver{position:fixed;left:50%;bottom:0;z-index:60;width:min(34vw,150px);transform:translate(-50%,110%);pointer-events:none}
+#deliver img{width:100%;display:block}
+#deliver.go{animation:pop 2s cubic-bezier(.3,1.25,.5,1) forwards}
+@keyframes pop{0%{transform:translate(-50%,110%)}30%{transform:translate(-50%,6%)}38%{transform:translate(-50%,8%) rotate(-3deg)}46%{transform:translate(-50%,6%) rotate(3deg)}54%{transform:translate(-50%,6%) rotate(0)}78%{transform:translate(-50%,6%)}100%{transform:translate(-50%,110%)}}
+#nope{position:fixed;left:50%;bottom:-160px;z-index:60;transform:translateX(-50%);transition:bottom .45s cubic-bezier(.3,1.4,.5,1);display:flex;align-items:center;gap:10px;pointer-events:none;
+  background:#fffdf7;padding:10px 16px 10px 10px;border-radius:40px;box-shadow:0 10px 30px rgba(70,50,30,.25);width:max-content;max-width:92vw}
+#nope.show{bottom:22px}
+#nope img{width:50px;height:50px;border-radius:50%}
+#nope p{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:21px;line-height:1.1;max-width:230px}
+
+/* the letter */
+#modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(45,42,38,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#modal.show{display:flex;animation:fade .35s}
+@keyframes fade{from{opacity:0}}
+.card{position:relative;width:100%;max-width:460px;max-height:92vh;overflow:auto;background:#fffdf7;border-radius:4px;box-shadow:0 30px 70px rgba(45,42,38,.4);animation:rise .55s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes rise{from{transform:translateY(30px) rotate(-2deg);opacity:0}}
+.gallery{position:relative;margin:14px 14px 0;aspect-ratio:4/5;overflow:hidden;background:#e6dccb}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity .6s}
+.slide.on{opacity:1}
+.slide img,.slide .ph{width:100%;height:100%;object-fit:cover}
+.arrow{position:absolute;top:50%;margin-top:-19px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,253,247,.92);font-size:22px;color:var(--ink);cursor:pointer}
+.arrow.l{left:10px}.arrow.r{right:10px}
+.text{position:relative;padding:20px 24px 30px}
+.text h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:36px;line-height:1;color:#2d2a26;padding-right:90px;margin-bottom:10px}
+.text p{font-size:19px;line-height:1.5;white-space:pre-line;color:#2d2a26}
+.stamp{position:absolute;width:84px;filter:drop-shadow(0 3px 6px rgba(45,42,38,.28));z-index:3}
+.stamp .perf{position:relative;width:84px;height:96px;background:#fff;
+  -webkit-mask:radial-gradient(circle 3.4px at 6px 6px,transparent 97%,#000) -6px -6px/12px 12px;mask:radial-gradient(circle 3.4px at 6px 6px,transparent 97%,#000) -6px -6px/12px 12px}
+.stamp .in{position:absolute;left:7px;top:7px;width:70px;height:82px;overflow:hidden}
+.stamp img{width:70px;height:70px;object-fit:cover;display:block;background:#efe4d0}
+.stamp.char{right:18px;top:-54px;transform:rotate(6deg)}
+.chip{position:absolute;left:24px;top:24px;z-index:3;width:50px;padding:6px 0 7px;border-radius:13px;text-align:center;
+  background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  box-shadow:0 4px 14px rgba(0,0,0,.18),inset 0 0 0 .5px rgba(255,255,255,.7);font-family:Inter,-apple-system,system-ui,sans-serif}
+.chip small{display:block;font-size:11px;font-weight:600;color:#d0352b;line-height:1}
+.chip b{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em;color:#1d1d1f;line-height:1.05;margin-top:2px}
+.close{position:absolute;top:24px;right:24px;z-index:4;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,253,247,.94);font-size:20px;color:var(--ink);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:55}
+
+/* preview only */
+#pbar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:70;display:none;align-items:center;gap:8px;background:#2d2a26;color:#fffdf7;
+  padding:7px 8px 7px 14px;border-radius:999px;font:14px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap}
+#pbar button{border:0;background:rgba(255,255,255,.15);color:#fffdf7;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer}
+#pbar button.txt{width:auto;padding:0 12px;border-radius:999px;font-size:12px}
+#pbar b{font-weight:600;min-width:58px;text-align:center}
+#tg{position:fixed;inset:0;z-index:80;display:none;align-items:flex-end;justify-content:center;background:rgba(20,24,30,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:14px}
+#tg.show{display:flex}
+.tgchat{width:100%;max-width:400px;background:#dfe7d9;border-radius:22px;overflow:hidden;font-family:-apple-system,system-ui,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.tghead{display:flex;align-items:center;gap:10px;background:#fff;padding:10px 14px}
+.tghead img{width:36px;height:36px;border-radius:50%;background:#efe4d0}
+.tghead b{display:block;font-size:15px}.tghead small{font-size:12px;color:#6c7a86}
+.tgbody{padding:14px}
+.bubble{background:#fff;border-radius:14px 14px 14px 4px;overflow:hidden;max-width:310px}
+.bubble video{width:100%;display:block;aspect-ratio:1}
+.bubble p{font-size:14.5px;line-height:1.35;padding:8px 10px 2px;white-space:pre-line}
+.bubble time{display:block;text-align:right;font-size:11px;color:#8a96a0;padding:0 10px 6px}
+.tgbtn{margin-top:6px;max-width:310px;width:100%;border:0;border-radius:10px;background:rgba(255,255,255,.75);color:#2b6cb0;font-size:14.5px;font-weight:600;padding:11px;cursor:pointer}
+.tgnote{font-size:11.5px;color:#4a5560;text-align:center;margin-top:10px}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="headline">Twenty-four days of us</h1>
+    <p><span id="sub"></span><svg viewBox="0 0 20 18" aria-hidden="true"><path d="M10 17.5C3.6 13.2 1 9.8 1 6.2 1 3.3 3.3 1 6 1c1.7 0 3.1.9 4 2.3C10.9 1.9 12.3 1 14 1c2.7 0 5 2.3 5 5.2 0 3.6-2.6 7-9 11.3z" fill="#c8463a"/></svg></p>
+  </header>
+  <div class="wall" id="wall"></div>
+</main>
+<div class="floor" id="floor"></div>
+<footer id="foot"></footer>
+
+<div id="modal" role="dialog" aria-modal="true">
+  <div class="card" id="card">
+    <button class="close" id="close" aria-label="Close">&times;</button>
+    <div class="gallery" id="gallery"></div>
+    <div class="chip"><small>Dec</small><b id="dnum"></b></div>
+    <div class="text">
+      <div class="stamp char"><div class="perf"></div><div class="in"><img src="character/face.webp" alt=""></div></div>
+      <h2 id="mTitle"></h2>
+      <p id="mMsg"></p>
+    </div>
+  </div>
+</div>
+<div id="deliver"><img src="character/deliver.webp" alt=""></div>
+<div id="nope"><img src="character/face.webp" alt=""><p id="nopeText"></p></div>
+<div id="tg"><div class="tgchat"><div class="tghead"><img src="character/face.webp" alt=""><div><b id="tgname"></b><small>bot</small></div></div>
+<div class="tgbody"><div class="bubble"><video id="tgv" muted loop playsinline autoplay></video><p id="tgp"></p><time id="tgt"></time></div>
+<button class="tgbtn" id="tgb"></button><div class="tgnote">Preview: this is the Telegram message they get. Tap the button.</div></div></div></div>
+<div id="pbar"><span>Pretend it's</span><button id="pPrev" aria-label="Earlier">&lsaquo;</button><b id="pDay"></b><button id="pNext" aria-label="Later">&rsaquo;</button><button class="txt" id="pReset">Reset</button></div>
+<canvas id="confetti"></canvas>
+
+<script>
+{
+  const pad = n => String(n).padStart(2,"0");
+  const params = new URLSearchParams(location.search);
+  const preview = CONFIG.testMode || params.has("preview");
+  const KEY = (preview ? "wall-preview-" : "wall-opened-") + CONFIG.year;
+  const store = { get(k,d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+                  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} } };
+  let pDay = store.get(KEY + "-day", 7);
+  let opened = store.get(KEY, null) || (preview ? Array.from({length:pDay-1},(_,i)=>i+1) : []);
+  const save = () => { store.set(KEY, opened); if (preview) store.set(KEY + "-day", pDay); };
+  const isBig = d => [6, 21, 24].includes(d);   // the three large frames are fixed in the layout
+  let delivered = [];
+
+  /* where each frame hangs: [column, column span, row, row span] */
+  const SLOTS = {1:[1,4,1,3],2:[5,2,1,2],3:[5,2,3,2],4:[1,2,4,2],5:[3,2,4,2],6:[1,4,6,4],7:[5,2,5,2],8:[5,2,7,2],9:[5,2,9,2],10:[1,2,10,2],
+    11:[3,2,10,2],12:[5,2,11,2],13:[1,4,12,2],14:[5,2,13,2],15:[1,2,14,2],16:[3,2,14,2],17:[5,2,15,2],18:[1,2,16,2],19:[3,2,16,2],20:[5,2,17,2],
+    21:[1,4,18,4],22:[5,2,19,2],23:[5,2,21,2],24:[1,4,22,4]};
+  const FRAMES = ["louis","dutch","gustavian","walnut","florentine","silver","lacquer","empire","oak"];
+  const frameFor = d => isBig(d) ? "baroque" : FRAMES[(d * 4) % FRAMES.length];
+  const MATTED = new Set(["dutch","lacquer","walnut","silver","oak"]);
+  const TILT = [-.6,.4,-.3,.5,-.4,.2,.6,-.5,.3,-.5,.4,-.2];
+
+  const CH = CONFIG.character || {};
+  document.title = CONFIG.headline || document.title;
+  document.getElementById("headline").textContent = CONFIG.headline || "Twenty-four days of us";
+  document.getElementById("sub").textContent = "for " + CONFIG.name;
+  document.getElementById("foot").textContent = "love, " + CONFIG.from + (CH.name ? " & " + CH.name : "");
+  document.getElementById("tgname").textContent = CH.name || "Delivery";
+  { const W = ({forest:["#2c3a31","#33433a","#26332b","#222d26"], navy:["#222c40","#2b3750","#1d2638","#192131"],
+      burgundy:["#3b2027","#4a2a32","#33191f","#2c161b"], charcoal:["#2b2b2f","#35353a","#262629","#212124"]})[CONFIG.wall] || null;
+    if (W) { const r = document.documentElement.style; r.setProperty("--wall",W[0]); r.setProperty("--wall-a",W[1]); r.setProperty("--wall-b",W[2]); r.setProperty("--wall-c",W[3]);
+      document.querySelector('meta[name=theme-color]').content = W[0]; } }
+
+  function photosFor(d){ const c = CONFIG.days[d] || {}; return (c.photos && c.photos.length) ? c.photos : ["photos/" + pad(d) + ".jpg"]; }
+  function img(src){
+    const el = new Image(); el.alt = ""; el.loading = "lazy"; el.src = src;
+    el.onerror = () => { const ph = document.createElement("div"); ph.className = "ph"; ph.textContent = preview ? "photo coming" : ""; el.replaceWith(ph); };
+    return el;
+  }
+  const tasselSVG = `<svg class="tassel" viewBox="0 0 10 30"><line x1="5" y1="0" x2="5" y2="10" stroke="#d9b866" stroke-width="1.5"/><circle cx="5" cy="11" r="3" fill="#d9b866"/><path d="M2 13 L8 13 L9.5 29 L.5 29Z" fill="#c9a24f"/><g stroke="#8a6a26" stroke-width=".6"><line x1="3" y1="15" x2="2" y2="29"/><line x1="5" y1="15" x2="5" y2="29"/><line x1="7" y1="15" x2="8" y2="29"/></g></svg>`;
+
+  const wall = document.getElementById("wall"), els = {};
+  function render(){
+    wall.innerHTML = ""; for (const k in els) delete els[k];
+    const latest = delivered.length ? Math.max(...delivered) : 0;
+    for (let d = 1; d <= 24; d++){
+      const [c,cs,r,rs] = SLOTS[d];
+      const slot = document.createElement("div");
+      slot.className = "slot" + (cs === 4 ? " big" : ""); slot.style.gridArea = `${r} / ${c} / span ${rs} / span ${cs}`;
+      if (!delivered.includes(d)) {
+        slot.innerHTML = `<div class="wait"><span>${d}</span></div>`;
+      } else {
+        const f = frameFor(d), isOpen = opened.includes(d);
+        slot.classList.add(isOpen ? "open" : (d === latest ? "fresh" : "closed"));
+        slot.innerHTML = `${isBig(d) ? '<i class="lamp"></i>' : ''}<div class="frame" style="--img:url(frames/${f}.webp);--r:${TILT[d%12]}deg"><div class="pic${MATTED.has(f) ? " matted" : ""}"></div></div>
+          <div class="drape"></div>${tasselSVG}<div class="plaque">${d}</div>`;
+        slot.querySelector(".pic").appendChild(img(photosFor(d)[0]));
+        slot.addEventListener("click", () => onDoor(d));
+        els[d] = slot;
+      }
+      wall.appendChild(slot);
+    }
+    floor();
+  }
+
+  /* the gallery floor: brass posts, a velvet rope, and the character on duty */
+  function floor(){
+    document.getElementById("floor").innerHTML = `<div class="skirting"></div><div class="parquet"></div>
+      <svg class="rope" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="br" x1="0" x2="1"><stop offset="0" stop-color="#8a6a2c"/><stop offset=".45" stop-color="#f0d792"/><stop offset="1" stop-color="#8a6a2c"/></linearGradient></defs>
+        <path d="M40 58 Q120 104 200 66" stroke="#7d1822" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M200 66 Q280 104 360 58" stroke="#7d1822" stroke-width="7" fill="none" stroke-linecap="round"/>
+        ${[40,360].map(x => `<rect x="${x-4}" y="50" width="8" height="84" rx="3" fill="url(#br)"/><circle cx="${x}" cy="48" r="8" fill="url(#br)"/><ellipse cx="${x}" cy="136" rx="20" ry="6" fill="url(#br)"/>`).join("")}
+      </svg>
+      ${CONFIG.hasPet ? '<img class="guard" src="character/sit.webp" alt="">' : ''}`;
+  }
+
+  let nopeT;
+  function nope(msg){
+    document.getElementById("nopeText").textContent = msg;
+    const n = document.getElementById("nope"); n.classList.add("show");
+    clearTimeout(nopeT); nopeT = setTimeout(() => n.classList.remove("show"), 2600);
+  }
+  function onDoor(d){
+    const el = els[d];
+    if (el.classList.contains("open")) { showModal(d); return; }
+    if (preview) { telegram(d); return; }
+    el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake");
+    nope("Open this one from the Telegram message.");
+  }
+  function deliver(d){
+    const el = els[d];
+    const m = document.getElementById("deliver"); m.classList.remove("go"); void m.offsetWidth; m.classList.add("go");
+    el.classList.remove("fresh");
+    setTimeout(() => el.classList.add("open"), 600);
+    setTimeout(() => showModal(d), 1700);
+    if (!opened.includes(d)) { opened.push(d); save(); }
+  }
+
+  const modal = document.getElementById("modal"), card = document.getElementById("card"), gal = document.getElementById("gallery");
+  let slideT, idx = 0;
+  function showModal(d){
+    const c = CONFIG.days[d] || {};
+    document.getElementById("dnum").textContent = d;
+    document.getElementById("mTitle").textContent = c.title || "";
+    document.getElementById("mMsg").textContent = c.message || "";
+    gal.innerHTML = ""; clearInterval(slideT); idx = 0;
+    const pics = photosFor(d);
+    pics.forEach((src,i) => { const s = document.createElement("div"); s.className = "slide" + (i ? "" : " on"); s.appendChild(img(src)); gal.appendChild(s); });
+    if (pics.length > 1) {
+      const l = document.createElement("button"); l.className = "arrow l"; l.innerHTML = "&lsaquo;"; l.onclick = e => { e.stopPropagation(); go(idx-1); };
+      const r = document.createElement("button"); r.className = "arrow r"; r.innerHTML = "&rsaquo;"; r.onclick = e => { e.stopPropagation(); go(idx+1); };
+      gal.append(l, r); slideT = setInterval(() => go(idx+1), 3800);
+    }
+    modal.classList.add("show"); card.scrollTop = 0;
+    if (isBig(d)) confetti(d === 24 ? 220 : 140);
+  }
+  function go(n){ const s = gal.querySelectorAll(".slide"); idx = (n + s.length) % s.length; s.forEach((x,i) => x.classList.toggle("on", i === idx)); }
+  function closeModal(){ modal.classList.remove("show"); clearInterval(slideT); }
+  document.getElementById("close").onclick = closeModal;
+  modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+  /* paper confetti and straw stars for the special days */
+  const cc = document.getElementById("confetti"), cx = cc.getContext("2d"); let bits = [], running = false;
+  function confetti(n){
+    const dpr = devicePixelRatio || 1; cc.width = innerWidth*dpr; cc.height = innerHeight*dpr;
+    const cols = ["#d9b56a","#9e3a2b","#e9b8ad","#8fa58b","#efd27e","#fffdf7"];
+    for (let i=0;i<n;i++) bits.push({x:Math.random()*cc.width, y:-20*dpr - Math.random()*cc.height*.6, vx:(Math.random()-.5)*1.2*dpr, vy:(Math.random()*1.6+1.4)*dpr,
+      s:(Math.random()*6+6)*dpr, r:Math.random()*6, vr:(Math.random()-.5)*.08, c:cols[i%cols.length], w:Math.random()*6});
+    if (!running) { running = true; requestAnimationFrame(tick); }
+  }
+  function tick(){
+    cx.clearRect(0,0,cc.width,cc.height);
+    bits.forEach(b => { b.w += .05; b.x += b.vx + Math.sin(b.w)*.6; b.y += b.vy; b.r += b.vr;
+      cx.save(); cx.translate(b.x,b.y); cx.rotate(b.r); cx.fillStyle = b.c; cx.fillRect(-b.s/2,-b.s/4*Math.abs(Math.cos(b.w)),b.s,b.s/2*Math.abs(Math.cos(b.w))+1); cx.restore(); });
+    bits = bits.filter(b => b.y < cc.height + 30);
+    if (bits.length) requestAnimationFrame(tick); else { running = false; cx.clearRect(0,0,cc.width,cc.height); }
+  }
+
+  /* preview: the Telegram message and a date you can change */
+    function telegram(d){
+    const v = document.getElementById("tgv"); v.src = "cards/" + pad(d) + ".mp4"; v.play().catch(()=>{});
+    document.getElementById("tgp").textContent = ((CONFIG.days[d] || {}).note || "") + "\n\n" + (CH.sign_off || "");
+    document.getElementById("tgt").textContent = (8 + (d*7)%12) + ":" + pad((d*13)%4*15);
+    const b = document.getElementById("tgb"); b.textContent = (isBig(d) ? "Open special door " : "Open door ") + d;
+    const tg = document.getElementById("tg"); tg.classList.add("show");
+    b.onclick = () => { tg.classList.remove("show"); v.pause(); setTimeout(() => { els[d].scrollIntoView({block:"center",behavior:"smooth"}); setTimeout(() => deliver(d), 500); }, 100); };
+    tg.onclick = e => { if (e.target === tg) { tg.classList.remove("show"); v.pause(); } };
+  }
+  function previewSetup(){
+    document.getElementById("pbar").style.display = "flex";
+    const show = () => { document.getElementById("pDay").textContent = pDay + " Dec"; delivered = Array.from({length:pDay},(_,i)=>i+1); render(); save(); };
+    document.getElementById("pPrev").onclick = () => { if (pDay > 0) { pDay--; opened = opened.filter(d => d <= pDay); show(); } };
+    document.getElementById("pNext").onclick = () => { if (pDay < 24) { pDay++; show(); } };
+    document.getElementById("pReset").onclick = () => { pDay = 7; opened = [1,2,3,4,5,6]; show(); };
+    show();
+  }
+
+  async function start(){
+    if (preview) { previewSetup(); return; }
+    try { delivered = (await (await fetch("/api/doors", {cache:"no-store"})).json()).delivered || []; }
+    catch(e) { delivered = opened.slice(); }
+    opened.forEach(d => { if (!delivered.includes(d)) delivered.push(d); });
+    render();
+    const want = parseInt(params.get("door"), 10), k = params.get("k");
+    if (!(want >= 1 && want <= 24)) return;
+    history.replaceState(null, "", location.pathname);
+    let ok = opened.includes(want);
+    if (!ok && k) { try { ok = (await (await fetch("/api/doors?door=" + want + "&k=" + encodeURIComponent(k), {cache:"no-store"})).json()).ok; } catch(e) {} }
+    if (!ok || !els[want]) { nope("That one isn't ready yet."); return; }
+    setTimeout(() => { els[want].scrollIntoView({block:"center", behavior:"smooth"}); setTimeout(() => opened.includes(want) ? showModal(want) : deliver(want), 700); }, 300);
+  }
+  start();
+}
+</script>
+</body>
+</html>

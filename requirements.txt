@@ -1,0 +1,7 @@
+# Only needed on the computer where you run tools/build.py
+pillow
+numpy
+opencv-python-headless
+rembg
+onnxruntime
+playwright

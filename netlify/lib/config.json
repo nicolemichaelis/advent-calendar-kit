@@ -1,0 +1,93 @@
+{
+  "year": 2026,
+  "timezone": "Europe/Stockholm",
+  "send_window": {
+    "from_hour": 8,
+    "to_hour": 20
+  },
+  "special_days": [
+    6,
+    21,
+    24
+  ],
+  "cards": true,
+  "character": {
+    "name": "Biscuit",
+    "sign_off": "Love, Biscuit"
+  },
+  "welcome_message": "Biscuit here. I have been put in charge of deliveries until Christmas. One a day, from 1 December.",
+  "days": {
+    "1": {
+      "note": "Door 1 is ready. Tap the button when you have a minute."
+    },
+    "2": {
+      "note": "Door 2 is ready. Tap the button when you have a minute."
+    },
+    "3": {
+      "note": "Door 3 is ready. Tap the button when you have a minute."
+    },
+    "4": {
+      "note": "Door 4 is ready. Tap the button when you have a minute."
+    },
+    "5": {
+      "note": "Door 5 is ready. Tap the button when you have a minute."
+    },
+    "6": {
+      "note": "SPECIAL DELIVERY. Today's door is a big one."
+    },
+    "7": {
+      "note": "Door 7 is ready. Tap the button when you have a minute."
+    },
+    "8": {
+      "note": "Door 8 is ready. Tap the button when you have a minute."
+    },
+    "9": {
+      "note": "Door 9 is ready. Tap the button when you have a minute."
+    },
+    "10": {
+      "note": "Door 10 is ready. Tap the button when you have a minute."
+    },
+    "11": {
+      "note": "Door 11 is ready. Tap the button when you have a minute."
+    },
+    "12": {
+      "note": "Door 12 is ready. Tap the button when you have a minute."
+    },
+    "13": {
+      "note": "Door 13 is ready. Tap the button when you have a minute."
+    },
+    "14": {
+      "note": "Door 14 is ready. Tap the button when you have a minute."
+    },
+    "15": {
+      "note": "Door 15 is ready. Tap the button when you have a minute."
+    },
+    "16": {
+      "note": "Door 16 is ready. Tap the button when you have a minute."
+    },
+    "17": {
+      "note": "Door 17 is ready. Tap the button when you have a minute."
+    },
+    "18": {
+      "note": "Door 18 is ready. Tap the button when you have a minute."
+    },
+    "19": {
+      "note": "Door 19 is ready. Tap the button when you have a minute."
+    },
+    "20": {
+      "note": "Door 20 is ready. Tap the button when you have a minute."
+    },
+    "21": {
+      "note": "SPECIAL DELIVERY. Today's door is a big one."
+    },
+    "22": {
+      "note": "Door 22 is ready. Tap the button when you have a minute."
+    },
+    "23": {
+      "note": "Door 23 is ready. Tap the button when you have a minute."
+    },
+    "24": {
+      "note": "SPECIAL DELIVERY. Today's door is a big one."
+    }
+  }
+}
